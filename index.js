@@ -35,9 +35,9 @@ app.get("/download", async (req, res) => {
       title = "video"; // Fallback title
     }
 
-    const videoPath = path.resolve(__dirname, "temp_video.mp4");
-    const audioPath = path.resolve(__dirname, "temp_audio.mp4");
-    const outputPath = path.resolve(__dirname, `${title}.mp4`);
+    const videoPath = path.join("/tmp", "temp_video.mp4");
+    const audioPath = path.join("/tmp", "temp_audio.mp4");
+    const outputPath = path.join("/tmp", `${title}.mp4`);
 
     const videoStream = ytdl(videoURL, { quality: "highestvideo" });
     const audioStream = ytdl(videoURL, { quality: "highestaudio" });
