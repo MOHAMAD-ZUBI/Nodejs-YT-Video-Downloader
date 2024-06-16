@@ -42,50 +42,54 @@ app.get("/download", async (req, res) => {
     const videoStream = ytdl(videoURL, { quality: "highestvideo" });
     const audioStream = ytdl(videoURL, { quality: "highestaudio" });
 
-    // Pipe the video stream to a temporary file
-    const videoFile = fs.createWriteStream(videoPath);
-    videoStream.pipe(videoFile);
+    // Download video
+    await new Promise((resolve, reject) => {
+      const videoFile = fs.createWriteStream(videoPath);
+      videoStream.pipe(videoFile);
+      videoFile.on("finish", resolve);
+      videoFile.on("error", reject);
+    });
 
-    // Once the video stream is finished, pipe the audio stream to another temporary file
-    videoFile.on("finish", () => {
+    // Download audio
+    await new Promise((resolve, reject) => {
       const audioFile = fs.createWriteStream(audioPath);
       audioStream.pipe(audioFile);
-
-      // Once the audio stream is finished, merge the video and audio
-      audioFile.on("finish", () => {
-        ffmpeg()
-          .input(videoPath)
-          .input(audioPath)
-          .outputOptions("-c:v copy")
-          .outputOptions("-c:a copy")
-          .save(outputPath)
-          .on("end", () => {
-            // Clean up temporary files
-            fs.unlinkSync(videoPath);
-            fs.unlinkSync(audioPath);
-
-            // Serve the merged file
-            res.header(
-              "Content-Disposition",
-              `attachment; filename="${title}.mp4"`
-            );
-            res.header("Content-Type", "video/mp4");
-            res.sendFile(outputPath, (err) => {
-              if (err) {
-                console.error("Error sending file:", err);
-                res.status(500).send("Error sending file");
-              } else {
-                fs.unlinkSync(outputPath); // Clean up merged file after sending
-                console.log("Video downloaded successfully");
-              }
-            });
-          })
-          .on("error", (err) => {
-            console.error("Error during merging:", err);
-            res.status(500).send("Error merging video and audio");
-          });
-      });
+      audioFile.on("finish", resolve);
+      audioFile.on("error", reject);
     });
+
+    // Merge video and audio
+    ffmpeg()
+      .input(videoPath)
+      .input(audioPath)
+      .outputOptions("-c:v copy")
+      .outputOptions("-c:a copy")
+      .save(outputPath)
+      .on("end", () => {
+        // Clean up temporary files
+        fs.unlinkSync(videoPath);
+        fs.unlinkSync(audioPath);
+
+        // Serve the merged file
+        res.header(
+          "Content-Disposition",
+          `attachment; filename="${title}.mp4"`
+        );
+        res.header("Content-Type", "video/mp4");
+        res.sendFile(outputPath, (err) => {
+          if (err) {
+            console.error("Error sending file:", err);
+            res.status(500).send("Error sending file");
+          } else {
+            fs.unlinkSync(outputPath); // Clean up merged file after sending
+            console.log("Video downloaded successfully");
+          }
+        });
+      })
+      .on("error", (err) => {
+        console.error("Error during merging:", err);
+        res.status(500).send("Error merging video and audio");
+      });
   } catch (err) {
     console.error("Error fetching video info:", err);
     res.status(500).send("Error fetching video info");
