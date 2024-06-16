@@ -42,14 +42,8 @@ app.get("/download", async (req, res) => {
     const audioPath = path.resolve(__dirname, "temp_audio.mp4");
     const outputPath = path.resolve(__dirname, `${title}.mp4`);
 
-    const videoStream = ytdl(videoURL, {
-      filter: (format) =>
-        format.container === "mp4" && format.hasVideo && !format.hasAudio,
-    });
-    const audioStream = ytdl(videoURL, {
-      filter: (format) =>
-        format.container === "mp4" && format.hasAudio && !format.hasVideo,
-    });
+    const videoStream = ytdl(videoURL, { quality: "highestvideo" });
+    const audioStream = ytdl(videoURL, { quality: "highestaudio" });
 
     // Pipe the video stream to a temporary file
     const videoFile = fs.createWriteStream(videoPath);
