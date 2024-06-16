@@ -10,14 +10,11 @@ const port = 3000;
 // Set the path to the ffmpeg binary
 ffmpeg.setFfmpegPath(ffmpegPath);
 
+// Serve static files
+app.use(express.static("public"));
+
 app.get("/", (req, res) => {
-  res.send(`
-    <form action="/download" method="get">
-      <label for="url">YouTube Video URL:</label>
-      <input type="text" id="url" name="url" required>
-      <button type="submit">Download</button>
-    </form>
-  `);
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get("/download", async (req, res) => {
