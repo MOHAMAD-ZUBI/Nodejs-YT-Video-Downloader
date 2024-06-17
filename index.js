@@ -1,14 +1,15 @@
 const express = require("express");
 const ytdl = require("ytdl-core");
 const ffmpeg = require("fluent-ffmpeg");
-const ffmpegPath = require("ffmpeg-static");
+const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const fs = require("fs");
 const path = require("path");
+
 const app = express();
 const port = 3000;
 
-// Ensure the correct path to the ffmpeg binary is set
-ffmpeg.setFfmpegPath(ffmpegPath.path);
+// Set the path to the ffmpeg binary
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 app.use(express.static("public"));
 
@@ -87,7 +88,7 @@ app.get("/download", async (req, res) => {
       })
       .on("error", (err) => {
         console.error("Error during merging:", err);
-        res.status(500).send(err.message);
+        res.status(500).send("Error merging video and audio");
       });
   } catch (err) {
     console.error("Error fetching video info:", err);
