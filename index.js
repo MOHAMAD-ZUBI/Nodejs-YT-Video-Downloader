@@ -88,7 +88,7 @@ app.get("/download", async (req, res) => {
       })
       .on("error", (err) => {
         console.error("Error during merging:", err);
-        res.status(500).send("Error merging video and audio");
+        res.status(500).send(err.message);
       });
   } catch (err) {
     console.error("Error fetching video info:", err);
