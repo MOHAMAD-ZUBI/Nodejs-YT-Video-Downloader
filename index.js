@@ -7,10 +7,9 @@ const path = require("path");
 const app = express();
 const port = 3000;
 
-// Set the path to the ffmpeg binary
+// Ensure the correct path to the ffmpeg binary is set
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
-// Serve static files
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
